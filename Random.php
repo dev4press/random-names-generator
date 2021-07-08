@@ -17,7 +17,7 @@ class Random {
 	public function __construct() {
 	}
 
-	public static function instance() {
+	public static function instance() : Random {
 		static $_instance = false;
 
 		if ( $_instance === false ) {
@@ -27,7 +27,7 @@ class Random {
 		return $_instance;
 	}
 
-	private function get_list( $type ) {
+	private function get_list( string $type ) {
 		if ( ! isset( $this->lists[ $type ] ) ) {
 			$json = file_get_contents( 'names/' . $type . '.json', FILE_USE_INCLUDE_PATH );
 
@@ -37,7 +37,10 @@ class Random {
 		return $this->lists[ $type ];
 	}
 
-	public function output( $output = 'array' ) {
+	/**
+	 * @throws \Exception
+	 */
+	public function output( string $output = 'array' ) : Random {
 		if ( ! in_array( $output, $this->allowed_formats ) ) {
 			throw new Exception( 'Unrecognized format.' );
 		}
@@ -47,9 +50,9 @@ class Random {
 		return $this;
 	}
 
-	public function generate_names( $num = 1 ) {
-		if ( ! is_numeric( $num ) || $num < 1 ) {
-			throw new Exception( 'Invalid number.' );
+	public function generate_names( int $num = 1 ) {
+		if ( $num < 1 ) {
+			return array();
 		}
 
 		$first_names = $this->get_list( 'first' );
@@ -58,11 +61,11 @@ class Random {
 		$results = array();
 
 		for ( $i = 0; $i < $num; $i ++ ) {
-			$random_fname_index = array_rand( $first_names );
-			$random_lname_index = array_rand( $last_names );
+			$random_first_name_index = array_rand( $first_names );
+			$random_last_name_index  = array_rand( $last_names );
 
-			$first_name = $first_names[ $random_fname_index ];
-			$last_name  = $last_names[ $random_lname_index ];
+			$first_name = $first_names[ $random_first_name_index ];
+			$last_name  = $last_names[ $random_last_name_index ];
 
 			switch ( $this->output ) {
 				case 'array':

@@ -8,4 +8,4 @@ This class is based on the original project [PHP Random Name Generator](https://
 
 ## Requirements
 
-PHP 5.3+
+PHP 7.0+
