@@ -50,10 +50,18 @@ class Random {
 		return $this;
 	}
 
-	public function generate_names( int $num = 1 ) {
+	public function generate_name() : string {
+		$list = $this->generate_names( 1, 'array' );
+
+		return $list[0];
+	}
+
+	public function generate_names( int $num = 1, string $output = '' ) {
 		if ( $num < 1 ) {
 			return array();
 		}
+
+		$output = empty( $output ) ? $this->output : $output;
 
 		$first_names = $this->get_list( 'first' );
 		$last_names  = $this->get_list( 'last' );
@@ -67,7 +75,7 @@ class Random {
 			$first_name = $first_names[ $random_first_name_index ];
 			$last_name  = $last_names[ $random_last_name_index ];
 
-			switch ( $this->output ) {
+			switch ( $output ) {
 				case 'array':
 					$results[] = $first_name . ' ' . $last_name;
 					break;
@@ -78,7 +86,7 @@ class Random {
 			}
 		}
 
-		if ( $this->output == 'json' ) {
+		if ( $output == 'json' ) {
 			$results = json_encode( $results );
 		}
 
