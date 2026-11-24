@@ -3,21 +3,22 @@
 namespace Dev4Press\Generator\Name;
 
 use Exception;
+use RuntimeException;
 
 class Random {
-	protected $output = 'array';
-	protected $allowed_formats = array(
+	protected string $output = 'array';
+	protected array $allowed_formats = array(
 		'array',
 		'json',
 		'associative_array'
 	);
 
-	private $lists = array();
+	private array $lists = array();
 
 	public function __construct() {
 	}
 
-	public static function instance() : Random {
+	public static function instance(): Random {
 		static $_instance = false;
 
 		if ( $_instance === false ) {
@@ -27,11 +28,27 @@ class Random {
 		return $_instance;
 	}
 
-	private function get_list( string $type ) {
+	private function get_list( string $type ): array {
 		if ( ! isset( $this->lists[ $type ] ) ) {
-			$json = file_get_contents( 'names/' . $type . '.json', FILE_USE_INCLUDE_PATH );
+			$json = @file_get_contents( __DIR__ . '/names/' . $type . '.json' );
+			if ( $json === false ) {
+				throw new RuntimeException( 'Unable to read the ' . $type . ' name list.' );
+			}
 
-			$this->lists[ $type ] = json_decode( $json, true );
+			$names = json_decode( $json );
+			if ( ! is_array( $names ) ) {
+				throw new RuntimeException( 'Invalid JSON name list for ' . $type . ' names.' );
+			}
+
+			$names = array_filter( $names, static function ( mixed $name ): bool {
+				return is_string( $name ) && trim( $name ) !== '';
+			} );
+
+			if ( empty( $names ) ) {
+				throw new RuntimeException( 'The ' . $type . ' name list has no usable entries.' );
+			}
+
+			$this->lists[ $type ] = $names;
 		}
 
 		return $this->lists[ $type ];
@@ -40,7 +57,7 @@ class Random {
 	/**
 	 * @throws \Exception
 	 */
-	public function output( string $output = 'array' ) : Random {
+	public function output( string $output = 'array' ): Random {
 		if ( ! in_array( $output, $this->allowed_formats ) ) {
 			throw new Exception( 'Unrecognized format.' );
 		}
@@ -50,13 +67,13 @@ class Random {
 		return $this;
 	}
 
-	public function generate_name() : string {
+	public function generate_name(): string {
 		$list = $this->generate_names( 1, 'array' );
 
 		return $list[0];
 	}
 
-	public function generate_names( int $num = 1, string $output = '' ) {
+	public function generate_names( int $num = 1, string $output = '' ): array|string|false {
 		if ( $num < 1 ) {
 			return array();
 		}
